@@ -68,7 +68,7 @@ const SearchPage = () => {
   useEffect(() => {
     getCharacters(pageCharacter)
     getEpisodes(pageEpisode)
-  }, [pageCharacter])
+  }, [pageCharacter, pageEpisode])
 
   const getCharacters = async (page) => {
     const responseCharacters = await axios(
