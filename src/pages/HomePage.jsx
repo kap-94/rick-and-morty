@@ -26,7 +26,7 @@ const HomePage = () => {
   useEffect(() => {
     dispatch(fetchCharacters())
     dispatch(fetchEpisodes())
-  }, [])
+  }, [dispatch])
 
   const { loadingCharacters, characters } = useSelector(state => state.characters)
   const { loadingEpisodes, episodes } = useSelector(state => state.episodes)

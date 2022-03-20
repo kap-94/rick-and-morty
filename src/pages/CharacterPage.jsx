@@ -27,7 +27,7 @@ const CharacterPage = () => {
 
   useEffect(() => {
     dispatch(fetchOneCharacter(id))
-  }, [id])
+  }, [dispatch, id])
 
   const isLoading = useSelector(state => state.characters.loadingCurrentCharacter)
   const character = useSelector(state => state.characters.currentCharacter)

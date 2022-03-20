@@ -1,4 +1,3 @@
-import useCounter from '../hooks/useCounter'
 import axios from 'axios'
 
 import { types } from '../types/types'

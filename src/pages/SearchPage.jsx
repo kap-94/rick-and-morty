@@ -32,8 +32,6 @@ const StyledButton = styled('button')(({ theme }) => ({
   outline: 0,
   border: 0,
   margin: 0,
-  borderRadius: 0,
-  padding: 0,
   cursor: 'pointer',
   userSelect: 'none',
   verticalAlign: 'middle',
@@ -70,7 +68,7 @@ const SearchPage = () => {
   useEffect(() => {
     getCharacters(pageCharacter)
     getEpisodes(pageEpisode)
-  }, [pageCharacter, pageEpisode])
+  }, [pageCharacter])
 
   const getCharacters = async (page) => {
     const responseCharacters = await axios(
