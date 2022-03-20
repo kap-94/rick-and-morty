@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
-const useCounter = (initialState = 0, limit = 5) => {
+const useCounter = (initialState = 0) => {
   const [counter, setCounter] = useState(initialState)
 
-  if (counter <= 0) {
+  if (counter <= 0)   {
     setCounter(initialState)
   }
 

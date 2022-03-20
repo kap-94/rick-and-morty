@@ -4,8 +4,8 @@ import Grid from '@mui/material/Grid'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 
-const EpisodeCard = ({ info }) => {
-  const { url, name, episode, air_date } = info
+const EpisodeCard = ({ episode }) => {
+  const { url, name, code, air_date } = episode
 
   return (
     <Paper
@@ -41,7 +41,7 @@ const EpisodeCard = ({ info }) => {
           </Grid>
           <Grid item>
             <Typography variant='subtitle1' component='div'>
-              {episode}
+              {code}
             </Typography>
           </Grid>
         </Grid>

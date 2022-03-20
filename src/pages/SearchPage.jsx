@@ -5,6 +5,7 @@ import useCounter from '../hooks/useCounter'
 import useForm from '../hooks/useForm'
 
 // import queryString from 'quesry-string'
+
 import { styled } from '@mui/system'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
@@ -23,8 +24,8 @@ const SearchPageContainer = styled('div')(({ theme }) => ({
 }))
 
 const StyledButton = styled('button')(({ theme }) => ({
-  backgroundColor: theme.palette.common.white,
-  color: theme.palette.primary.main,
+  backgroundColor: theme.palette.secondary.dark,
+  color: theme.palette.common.white,
   display: 'inline-flex',
   justifyContent: 'center',
   position: 'relative',
@@ -37,8 +38,8 @@ const StyledButton = styled('button')(({ theme }) => ({
   verticalAlign: 'middle',
   textDecoration: 'none',
   fontWeight: 500,
-  fontSize: '0.875rem',
-  height: '2.25rem',
+  fontSize: '0.95rem',
+  height: '2.35rem',
   lineHeight: 1.75,
   letterSpacing: '0.02857em',
   textTransform: 'uppercase',
@@ -48,8 +49,7 @@ const StyledButton = styled('button')(({ theme }) => ({
   transition: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
 
   '&:hover': {
-    color: theme.palette.common.white,
-    backgroundColor: theme.palette.primary.light
+    backgroundColor: '#449C86'
   }
 }))
 
@@ -58,9 +58,9 @@ const SearchPage = () => {
   const [characters, setCharacters] = useState([])
   const [episodes, setEpisodes] = useState([])
 
-  const { counter: pageCharacter, increment: nextCharPage, decrement: lastCharPage, reset } = useCounter(1)
+  const { counter: pageCharacter, increment: nextCharPage, decrement: lastCharPage } = useCounter(1)
   const { counter: pageEpisode, increment: nextExpisodePage, decrement: lastEpisodePage } = useCounter(1)
-  
+
   const [{ searchText }, handleInputChange] = useForm({
     searchText: ''
   })
@@ -71,30 +71,39 @@ const SearchPage = () => {
   }, [pageCharacter, pageEpisode])
 
   const getCharacters = async (page) => {
-    const responseCharacters = await axios(
-            `https://rickandmortyapi.com/api/character/?name=${searchText}&page=${page}`
-    )
-    const dataCharacters = await responseCharacters.data
-    const { results: characters } = !!dataCharacters && dataCharacters
+    try {
+      const responseCharacters = await axios(
+        `https://rickandmortyapi.com/api/character/?name=${searchText}&page=${page}`
+      )
+      const dataCharacters = await responseCharacters.data
+      const { results: characters } = !!dataCharacters && dataCharacters
 
-    setCharacters(characters)
+      setCharacters(characters)
+    } catch (error) {
+
+      setCharacters([])
+    }
   }
 
   const getEpisodes = async (page) => {
-    const responseEpisodes = await axios(
-            `https://rickandmortyapi.com/api/episode/?name=${searchText}&page=${page}`
-    )
-    const dataEpisodes = await responseEpisodes.data
-    const { results: episodes } = !!dataEpisodes && dataEpisodes
+    try {
+      const responseEpisodes = await axios(
+        `https://rickandmortyapi.com/api/episode/?name=${searchText}&page=${page}`
+      )
+      const dataEpisodes = await responseEpisodes.data
+      const { results: episodes } = !!dataEpisodes && dataEpisodes
 
-    setEpisodes(episodes)
+      setEpisodes(episodes)
+    } catch (error) {
+      setEpisodes([])
+    }
   }
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e.preventDefault()
-    reset()
-    getCharacters(pageCharacter)
-    getEpisodes(pageEpisode)
+
+    getCharacters(1)
+    getEpisodes(1)
     // navigate(`?q=${searchText}`)
   }
 
@@ -104,15 +113,17 @@ const SearchPage = () => {
         <Box
           component='form'
           onSubmit={handleSearch}
+          noValidate
+          autoComplete='off'
           sx={{
             '& > :not(style)': { my: '.825rem', w: '17.5rem' }
           }}
-          noValidate
-          autoComplete='off'
         >
           <TextField
-            name='searchText'
-            id='outlined-basic' label='Characters and Episodes' variant='outlined' onChange={handleInputChange} value={searchText} sx={{ backgroundColor: theme => theme.palette.common.white }}
+            name='searchText' color='secondary' focused
+            id='outlined-basic' label='Characters and Episodes' variant='outlined'
+            onChange={handleInputChange} value={searchText}
+            sx={{ color: '#fff' }}
           />
 
           <Stack spacing={2} direction='row' justifyContent='center' sx={{ width: '100%', backgroundColor: theme => theme.palette.primary.main }}>
@@ -123,49 +134,45 @@ const SearchPage = () => {
 
       <Grid container sx={{ display: 'flex', alignItems: 'start', minHeight: '100vh', p: '2rem 0', mt: 5 }}>
         <Grid item container xs={12} sm={6}>
-
-          <Typography sx={{ m: 'auto', mb: '1.5rem' }} variant='h4'>Characters</Typography>
+          <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Characters</Typography>
 
           <Box sx={{ m: 'auto', mb: 2 }}>
-            <StyledButton
-              type='button' onClick={lastCharPage} sx={{ mr: 1.5 }}
-            >&larr;
-            </StyledButton>
-            <StyledButton
-              type='button' onClick={nextCharPage}
-            >&rarr;
-            </StyledButton>
+            <StyledButton type='button' onClick={lastCharPage} sx={{ mr: 1.5 }} >&larr;</StyledButton>
+            {
+              characters.length !== 0 &&
+              <StyledButton type='button' onClick={nextCharPage}  >&rarr;
+              </StyledButton>
+            }
           </Box>
 
           <Grid item container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8 }}>
-            {characters.filter((_, idx) => idx < 9).map((character, idx) => (
+            {characters.filter((_, idx) => idx < 9).map((character) => (
               <Grid item xs={4} sm={4} key={character.id} sx={{ mb: 3 }}>
-                <CharacterCard info={character} />
+                <CharacterCard character={character} />
               </Grid>
             ))}
           </Grid>
         </Grid>
 
         <Grid item container xs={12} sm={6} sx={{ px: 3 }}>
-          <Typography sx={{ m: 'auto', mb: '1.5rem' }} variant='h4'>Episodes</Typography>
+          <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Episodes</Typography>
 
           <Box sx={{ m: 'auto', mb: 2 }}>
-            <StyledButton
-              type='button' onClick={lastEpisodePage} sx={{ mr: 1.5 }}
-            >&larr;
-            </StyledButton>
-            <StyledButton
-              type='button' onClick={nextExpisodePage}
-            >&rarr;
-            </StyledButton>
+            <StyledButton type='button' onClick={lastEpisodePage} sx={{ mr: 1.5 }} >&larr;</StyledButton>
+            {
+              episodes.length !== 0 &&
+              <StyledButton type='button' onClick={nextExpisodePage} >&rarr;
+              </StyledButton>
+            }
           </Box>
 
           <Grid item container>
-            {episodes.filter((_, idx) => idx < 9).map((episode, idx) => (
-              <EpisodeCard key={episode.id} info={episode} />
+            {episodes.filter((_, idx) => idx < 9).map((episode) => (
+              <EpisodeCard key={episode.id} episode={episode} />
             ))}
           </Grid>
         </Grid>
+
       </Grid>
     </SearchPageContainer>
   )

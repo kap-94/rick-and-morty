@@ -26,7 +26,7 @@ const HomePage = () => {
   useEffect(() => {
     dispatch(fetchCharacters())
     dispatch(fetchEpisodes())
-  }, [dispatch])
+  }, [])
 
   const { loadingCharacters, characters } = useSelector(state => state.characters)
   const { loadingEpisodes, episodes } = useSelector(state => state.episodes)
@@ -35,45 +35,44 @@ const HomePage = () => {
     <HomePageContainer>
       <Grid container sx={{ display: 'flex', alignItems: 'start' }}>
         {
-                    loadingCharacters
-                      ? (
-                        <div>Loading...</div>
-                        )
-                      : (
-                        <Grid item container xs={12} sm={6}>
-                          <Typography sx={{ m: 'auto', mb: '1.5rem' }} variant='h4'>New Characters</Typography>
+          loadingCharacters
+            ? (
+              <div>Loading...</div>
+            )
+            : (
+              <Grid item container xs={12} sm={6}>
+                <Typography sx={{ m: 'auto', mb: '1.5rem' }} variant='h4'>New Characters</Typography>
 
-                          <Grid item container spacing={{ xs: 3 }} columns={{ xs: 4, sm: 8 }}>
-                            {characters.filter((_, idx) => idx < 9).sort((a, b) => a.itemM > b.itemM ? 1 : -1)
-                              .map((character, idx) => (
-                                <Grid item xs={4} key={character.id}>
-                                  <CharacterCard info={character} />
-                                </Grid>
-                              ))}
-                          </Grid>
-                        </Grid>
-                        )
-                }
+                <Grid item container spacing={{ xs: 3 }} columns={{ xs: 4, sm: 8 }}>
+                  {characters.filter((_, idx) => idx < 9).sort((a, b) => a.itemM > b.itemM ? 1 : -1)
+                    .map((character) => (
+                      <Grid item xs={4} key={character.id}>
+                        <CharacterCard character={character} />
+                      </Grid>
+                    ))}
+                </Grid>
+              </Grid>
+            )
+        }
 
         {
-                    loadingEpisodes
-                      ? (
-                        <div>Loading...</div>
-                        )
-                      : (
+          loadingEpisodes
+            ? (
+              <div>Loading...</div>
+            )
+            : (
+              <Grid item container xs={12} sm={6} sx={{ px: 3 }}>
+                <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Latest Episodes</Typography>
 
-                        <Grid item container xs={12} sm={6} sx={{ px: 3 }}>
-                          <Typography sx={{ m: 'auto', mb: '1.5rem' }} variant='h4'>Latest Episodes</Typography>
-
-                          <Grid item container>
-                            {episodes.filter((_, idx) => idx < 9).sort((a, b) => a.itemM > b.itemM ? 1 : -1)
-                              .map((episode, idx) => (
-                                <EpisodeCard key={episode.id} info={episode} />
-                              ))}
-                          </Grid>
-                        </Grid>
-                        )
-                }
+                <Grid item container>
+                  {episodes.filter((_, idx) => idx < 9).sort((a, b) => a.itemM > b.itemM ? 1 : -1)
+                    .map((episode) => (
+                      <EpisodeCard key={episode.id} episode={episode} />
+                    ))}
+                </Grid>
+              </Grid>
+            )
+        }
       </Grid>
     </HomePageContainer>
   )

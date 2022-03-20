@@ -58,7 +58,16 @@ const theme = createTheme({
     body1: {
       color: white
     }
-  }
+  },
+  components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          color: white
+        },
+      },
+    },
+  },
 
 })
 
