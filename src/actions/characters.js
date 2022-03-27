@@ -14,8 +14,8 @@ export const fetchCharacters = () => {
       .then(response => {
         const data = response.data
         const { results: characters } = !!data && data
-
         dispatch(fetchCharactersSuccess(characters))
+        
       }).catch(error => {
         const errorMsg = error.message
         dispatch(fetchCharactersError(errorMsg))
@@ -41,15 +41,15 @@ export const fetchOneCharacter = (id) => {
   return (dispatch) => {
     dispatch(fetchOneCharacterStart())
 
-    axios.get(
-            `https://rickandmortyapi.com/api/character/${id}`
-    ).then(response => {
-      const data = response.data
-      dispatch(fetchOneCharacterSuccess(data))
-    }).catch(error => {
-      const errorMsg = error.message
-      dispatch(fetchOneCharacterError(errorMsg))
-    })
+    axios.get(`https://rickandmortyapi.com/api/character/${id}`)
+      .then(response => {
+        const data = response.data
+        dispatch(fetchOneCharacterSuccess(data))
+
+      }).catch(error => {
+        const errorMsg = error.message
+        dispatch(fetchOneCharacterError(errorMsg))
+      })
   }
 }
 

@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useLocation, useNavigate } from 'react-router-dom'
+import queryString from 'query-string'
 
 import useCounter from '../hooks/useCounter'
 import useForm from '../hooks/useForm'
 
-// import queryString from 'quesry-string'
+import { getCharacters, getEpisodes } from '../helpers/helpers'
 
 import { styled } from '@mui/system'
-import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
-import TextField from '@mui/material/TextField'
-import Stack from '@mui/material/Stack'
+import Box from '@mui/material/Box'
 
-import EpisodeCard from '../components/EpisodeCard'
-import CharacterCard from '../components/CharacterCard'
+import SearchBar from '../components/SearchBar'
+import Pagination from '../components/Pagination'
+import CharactersList from '../components/CharactersList'
+import EpisodesList from '../components/EpisodesList'
+
 
 const SearchPageContainer = styled('div')(({ theme }) => ({
   color: theme.palette.primary.contrastText,
@@ -23,159 +25,96 @@ const SearchPageContainer = styled('div')(({ theme }) => ({
   paddingTop: 0
 }))
 
-const StyledButton = styled('button')(({ theme }) => ({
-  backgroundColor: theme.palette.secondary.dark,
-  color: theme.palette.common.white,
-  display: 'inline-flex',
-  justifyContent: 'center',
-  position: 'relative',
-  boxSizing: 'border-box',
-  outline: 0,
-  border: 0,
-  margin: 0,
-  cursor: 'pointer',
-  userSelect: 'none',
-  verticalAlign: 'middle',
-  textDecoration: 'none',
-  fontWeight: 500,
-  fontSize: '0.95rem',
-  height: '2.35rem',
-  lineHeight: 1.75,
-  letterSpacing: '0.02857em',
-  textTransform: 'uppercase',
-  minWidth: '64px',
-  padding: '6px 16px',
-  borderRadius: '4px',
-  transition: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,border-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
-
-  '&:hover': {
-    backgroundColor: '#449C86'
-  }
-}))
-
-const SearchPage = () => {
-  // const { q = '' } = queryString.parse(location.search);
+export default function SearchPage() {
   const [characters, setCharacters] = useState([])
   const [episodes, setEpisodes] = useState([])
 
-  const { counter: pageCharacter, increment: nextCharPage, decrement: lastCharPage } = useCounter(1)
-  const { counter: pageEpisode, increment: nextExpisodePage, decrement: lastEpisodePage } = useCounter(1)
+  const location = useLocation()
+
+  const { searchText: q = '' } = queryString.parse(location.search)
 
   const [{ searchText }, handleInputChange] = useForm({
-    searchText: ''
+    searchText: q
   })
 
+
+  const { counter: pageCharacter, increment: nextCharPage, decrement: lastCharPage } = useCounter(1)
+  const { counter: pageEpisode, increment: nextEpisodePage, decrement: lastEpisodePage } = useCounter(1)
+
   useEffect(() => {
-    getCharacters(pageCharacter)
-    getEpisodes(pageEpisode)
-  }, [pageCharacter, pageEpisode])
+    const search = async function () {
+      const resCharacters = await getCharacters(searchText, pageCharacter)
+      const resEpisodes = await getEpisodes(searchText, pageEpisode)
 
-  const getCharacters = async (page) => {
-    try {
-      const responseCharacters = await axios(
-        `https://rickandmortyapi.com/api/character/?name=${searchText}&page=${page}`
-      )
-      const dataCharacters = await responseCharacters.data
-      const { results: characters } = !!dataCharacters && dataCharacters
-
-      setCharacters(characters)
-    } catch (error) {
-
-      setCharacters([])
+      setCharacters(resCharacters)
+      setEpisodes(resEpisodes)
     }
-  }
 
-  const getEpisodes = async (page) => {
-    try {
-      const responseEpisodes = await axios(
-        `https://rickandmortyapi.com/api/episode/?name=${searchText}&page=${page}`
-      )
-      const dataEpisodes = await responseEpisodes.data
-      const { results: episodes } = !!dataEpisodes && dataEpisodes
+    if (searchText && !characters.length && !episodes.length) {
+      // If is the first time that the component is rendered 
+      search()
+    } else {
+      const timeoutId = setTimeout(() => {
+        search()
+      }, 500)
 
-      setEpisodes(episodes)
-    } catch (error) {
-      setEpisodes([])
+      return () => {
+        clearTimeout(timeoutId)
+      }
     }
-  }
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-
-    getCharacters(1)
-    getEpisodes(1)
-    // navigate(`?q=${searchText}`)
-  }
+  }, [searchText, pageCharacter, pageEpisode])
 
   return (
     <SearchPageContainer>
       <Grid container justifyContent='center'>
-        <Box
-          component='form'
-          onSubmit={handleSearch}
-          noValidate
-          autoComplete='off'
-          sx={{
-            '& > :not(style)': { my: '.825rem', w: '17.5rem' }
-          }}
-        >
-          <TextField
-            name='searchText' color='secondary' focused
-            id='outlined-basic' label='Characters and Episodes' variant='outlined'
-            onChange={handleInputChange} value={searchText}
-            sx={{ color: '#fff' }}
-          />
-
-          <Stack spacing={2} direction='row' justifyContent='center' sx={{ width: '100%', backgroundColor: theme => theme.palette.primary.main }}>
-            <StyledButton type='submit'>Search</StyledButton>
-          </Stack>
-        </Box>
+        <SearchBar searchText={searchText} handleInputChange={handleInputChange} />
       </Grid>
 
       <Grid container sx={{ display: 'flex', alignItems: 'start', minHeight: '100vh', p: '2rem 0', mt: 5 }}>
         <Grid item container xs={12} sm={6}>
           <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Characters</Typography>
-
-          <Box sx={{ m: 'auto', mb: 2 }}>
-            <StyledButton type='button' onClick={lastCharPage} sx={{ mr: 1.5 }} >&larr;</StyledButton>
-            {
-              characters.length !== 0 &&
-              <StyledButton type='button' onClick={nextCharPage}  >&rarr;
-              </StyledButton>
-            }
-          </Box>
-
-          <Grid item container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8 }}>
-            {characters.filter((_, idx) => idx < 9).map((character) => (
-              <Grid item xs={4} sm={4} key={character.id} sx={{ mb: 3 }}>
-                <CharacterCard character={character} />
-              </Grid>
-            ))}
-          </Grid>
+          <Pagination lastPage={lastCharPage} nextPage={nextCharPage} list={characters} />
+          {
+            (searchText === '' && characters.length === 0)
+              ?
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h1>Loading...</h1>
+              </Box>
+              :
+              (characters.length === 0)
+                ?
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <h1>No results</h1>
+                </Box>
+                :
+                <CharactersList characters={characters} />
+          }
         </Grid>
 
         <Grid item container xs={12} sm={6} sx={{ px: 3 }}>
           <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Episodes</Typography>
+          <Pagination lastPage={lastEpisodePage} nextPage={nextEpisodePage} list={episodes} />
+          {
 
-          <Box sx={{ m: 'auto', mb: 2 }}>
-            <StyledButton type='button' onClick={lastEpisodePage} sx={{ mr: 1.5 }} >&larr;</StyledButton>
-            {
-              episodes.length !== 0 &&
-              <StyledButton type='button' onClick={nextExpisodePage} >&rarr;
-              </StyledButton>
-            }
-          </Box>
+            (searchText === '' && episodes.length === 0)
+              ?
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h1>Loading...</h1>
+              </Box>
+              :
+              (episodes.length === 0)
+                ?
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <h1>No results</h1>
+                </Box>
+                :
+                <EpisodesList episodes={episodes} />
 
-          <Grid item container>
-            {episodes.filter((_, idx) => idx < 9).map((episode) => (
-              <EpisodeCard key={episode.id} episode={episode} />
-            ))}
-          </Grid>
+          }
         </Grid>
-
       </Grid>
     </SearchPageContainer>
   )
 }
 
-export default SearchPage
