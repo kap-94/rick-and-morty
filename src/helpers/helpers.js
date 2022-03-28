@@ -11,12 +11,14 @@ export const getCharacters = async function (searchText, page) {
       })
 
     const data = await response.data
-    const { results: characters } = !!data && data
-    return characters
+
+    const { results: characters, info: { count } } = !!data && data
+
+    return { characters, count }
 
   } catch (error) {
 
-    return []
+    return { characters: [], count: 0 }
   }
 }
 
@@ -32,11 +34,14 @@ export const getEpisodes = async function (searchText, page) {
       }
     )
     const data = await response.data
-    const { results: episodes } = !!data && data
-    return episodes
+
+    const { results: episodes, info: { count } } = !!data && data
+
+    return { episodes, count }
 
   } catch (error) {
 
-    return []
+    return { episodes: [], count: 0 }
+
   }
 }

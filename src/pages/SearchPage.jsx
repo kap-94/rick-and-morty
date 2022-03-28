@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import queryString from 'query-string'
 
-import useCounter from '../hooks/useCounter'
 import useForm from '../hooks/useForm'
 
 import { getCharacters, getEpisodes } from '../helpers/helpers'
@@ -11,9 +10,10 @@ import { styled } from '@mui/system'
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack';
+import Pagination from '@mui/material/Pagination';
 
 import SearchBar from '../components/SearchBar'
-import Pagination from '../components/Pagination'
 import CharactersList from '../components/CharactersList'
 import EpisodesList from '../components/EpisodesList'
 
@@ -28,6 +28,13 @@ const SearchPageContainer = styled('div')(({ theme }) => ({
 export default function SearchPage() {
   const [characters, setCharacters] = useState([])
   const [episodes, setEpisodes] = useState([])
+  const [totalCharacters, setTotalCharacters] = useState(0)
+  const [totalEpisodes, setTotalEpisodes] = useState(0)
+  const [pageCharacter, setPageCharacter] = useState(1)
+  const [pageEpisode, setPageEpisode] = useState(1)
+
+  const totalCharacterPages = Math.ceil(totalCharacters / 20)
+  const totalEpisodePages = Math.ceil(totalEpisodes / 20)
 
   const location = useLocation()
 
@@ -37,17 +44,16 @@ export default function SearchPage() {
     searchText: q
   })
 
-
-  const { counter: pageCharacter, increment: nextCharPage, decrement: lastCharPage } = useCounter(1)
-  const { counter: pageEpisode, increment: nextEpisodePage, decrement: lastEpisodePage } = useCounter(1)
-
   useEffect(() => {
     const search = async function () {
-      const resCharacters = await getCharacters(searchText, pageCharacter)
-      const resEpisodes = await getEpisodes(searchText, pageEpisode)
+      const { characters, count: totalCharacters } = await getCharacters(searchText, pageCharacter)
+      const { episodes, count: totalEpisodes } = await getEpisodes(searchText, pageEpisode)
 
-      setCharacters(resCharacters)
-      setEpisodes(resEpisodes)
+      setCharacters(characters)
+      setTotalCharacters(totalCharacters)
+
+      setEpisodes(episodes)
+      setTotalEpisodes(totalEpisodes)
     }
 
     if (searchText && !characters.length && !episodes.length) {
@@ -62,8 +68,15 @@ export default function SearchPage() {
         clearTimeout(timeoutId)
       }
     }
-
   }, [searchText, pageCharacter, pageEpisode])
+
+  const handleCharacterPageChange = (_, val) => {
+    setPageCharacter(val)
+  }
+
+  const handleEpisodePageChange = (_, val) => {
+    setPageEpisode(val)
+  }
 
   return (
     <SearchPageContainer>
@@ -74,8 +87,9 @@ export default function SearchPage() {
       <Grid container sx={{ display: 'flex', alignItems: 'start', minHeight: '100vh', p: '2rem 0', mt: 5 }}>
         <Grid item container xs={12} sm={6}>
           <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Characters</Typography>
-          <Pagination lastPage={lastCharPage} nextPage={nextCharPage} list={characters} />
-          {
+          <Stack spacing={2} direction={'row'} justifyContent='center' alignItems={'center'}>
+            <Pagination count={totalCharacterPages} onChange={handleCharacterPageChange} color="secondary" />
+          </Stack>          {
             (searchText === '' && characters.length === 0)
               ?
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -94,9 +108,12 @@ export default function SearchPage() {
 
         <Grid item container xs={12} sm={6} sx={{ px: 3 }}>
           <Typography variant='h4' sx={{ m: 'auto', mb: '1.5rem' }} >Episodes</Typography>
-          <Pagination lastPage={lastEpisodePage} nextPage={nextEpisodePage} list={episodes} />
-          {
 
+          <Stack spacing={2}>
+            <Pagination count={totalEpisodePages} onChange={handleEpisodePageChange} color="secondary" />
+          </Stack>
+
+          {
             (searchText === '' && episodes.length === 0)
               ?
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
